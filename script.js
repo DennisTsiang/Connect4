@@ -1,7 +1,7 @@
 var COLUMNS = 7;
 var ROWS = 6;
-var player1 = "player1";
-var player2 = "player2";
+var player1 = "Player 1";
+var player2 = "Player 2";
 var playerTurn = player1;
 
 window.onload = function() {
@@ -20,7 +20,7 @@ function createArrows() {
 	var header = table.createTHead();
 	var row = header.insertRow(0);
 	for (var i=0; i < COLUMNS; i++) {
-		row.insertCell(i).innerHTML = '<button class="columnSelector" type="button" onclick="selectColumn(this.parentElement.cellIndex)"><div class="arrow-down"></div></button>';
+		row.insertCell(i).innerHTML = '<button class="columnSelector" type="button" onclick="makeMove(this.parentElement.cellIndex)"><div class="arrow-down"></div></button>';
 	}
 }
 
@@ -31,6 +31,14 @@ function createRows() {
 		for(var j=0; j < COLUMNS; j++) {
 			row.insertCell(j).innerHTML = '<div class="slot"></div>';
 		}
+	}
+}
+
+function makeMove(col) {
+	selectColumn(col);
+	if (playerTurn == "Computer") {
+		var computerCol = computerMove();
+		selectColumn(computerCol);
 	}
 }
 
@@ -50,14 +58,11 @@ function changePlayer() {
 		playerTurn = player1;
 	}
 	updatePlayerOnScreen();
-}
 
-function getPlayerTurn() {
-	return playerTurn == player1 ? "Player 1" : "Player 2";
 }
 
 function updatePlayerOnScreen() {
-	document.getElementById('Player').innerHTML = getPlayerTurn();
+	document.getElementById('Player').innerHTML = playerTurn;
 }
 
 function getPlayerColour() {
@@ -115,6 +120,7 @@ function resetGame() {
 	createRows();
 	playerTurn = player1;
 	updatePlayerOnScreen();
+	$('.overlay').show();
 }
 
 function checkForVictory(row, col) {
@@ -124,6 +130,18 @@ function checkForVictory(row, col) {
 		return true;
 	}
 	return false;
+}
+
+function displayWinner() {
+	var player = playerTurn;
+	alert(player +" wins!");
+}
+
+function disableButtons() {
+	var buttons = document.getElementsByClassName('columnSelector');
+	for (var i=0; i < buttons.length; i++) {
+		buttons[i].disabled = true;
+	}
 }
 
 function horizontalWin(row, col) {
@@ -144,18 +162,6 @@ function horizontalWin(row, col) {
 	}
 	return false;
 	
-}
-
-function displayWinner() {
-	var player = getPlayerTurn();
-	alert(player +" wins!");
-}
-
-function disableButtons() {
-	var buttons = document.getElementsByClassName('columnSelector');
-	for (var i=0; i < buttons.length; i++) {
-		buttons[i].disabled = true;
-	}
 }
 
 function diagonalWin() {
@@ -247,4 +253,18 @@ function verticalWin(row, col) {
 		}
 	}
 	return false;
+}
+
+//Computer makes a random move
+function computerMove() {
+	return Math.floor(Math.random() * (COLUMNS+1))
+}
+
+function closeOverlay(id) {
+	if (id == "Computer") {
+		player2 = "Computer";
+	} else {
+		player2 = "Player 2";
+	}
+	$('.overlay').hide();
 }

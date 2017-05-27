@@ -34,3 +34,24 @@
 	border-radius: 25px;
 	background-color: #5d8aa8;
 }
+
+.overlay {
+	background-color: rgba(0,0,0, 0.3);
+	height: 100%;
+	width: 100%;
+	position: fixed;
+	z-index: 1;
+}
+
+.overlay .overlaybtns {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.gameChoiceBtns {
+	padding: 20px;
+	border-radius: 25px;
+	background-color: #FFA500;
+}

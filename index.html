@@ -9,6 +9,12 @@
 </head>
 
 <body>
+	<div id="GameChoiceScreen" class="overlay">
+		<div class="overlaybtns">
+			<button class="gameChoiceBtns" id="Human" onclick="closeOverlay(this.id)">Human</button>
+			<button class="gameChoiceBtns" id="Computer" onclick="closeOverlay(this.id)">Computer</button>
+		</div>
+	</div>
 	<button id="reset" type="button" onclick="resetGame()">Reset Game</button>
 	<h1>Turn: <span id="Player"></span> </h1>
 	<div id="centre_wrapper">
