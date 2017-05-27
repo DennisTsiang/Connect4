@@ -1,5 +1,8 @@
-#wrapper {
-	margin: 50px;
+#centre_wrapper {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 .slot {
@@ -24,4 +27,10 @@
 .columnSelector {
 	background-color: transparent;
 	border: none;
+}
+
+#reset {
+	padding: 20px;
+	border-radius: 25px;
+	background-color: #5d8aa8;
 }

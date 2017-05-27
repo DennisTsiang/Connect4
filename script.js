@@ -1,11 +1,13 @@
 var COLUMNS = 7;
 var ROWS = 6;
-var playerTurn = "player1";
+var player1 = "player1";
+var player2 = "player2";
+var playerTurn = player1;
 
 window.onload = function() {
 	console.log("Window loaded");
 	makeBoard(COLUMNS,ROWS);
-	
+	updatePlayerOnScreen();
 }
 
 function makeBoard(cols, rows) {
@@ -13,56 +15,56 @@ function makeBoard(cols, rows) {
 	createRows(cols, rows);
 }
 
-function createArrows(cols) {
+function createArrows() {
 	var table = document.getElementById("board");
 	var header = table.createTHead();
 	var row = header.insertRow(0);
-	for (var i=0; i < cols; i++) {
+	for (var i=0; i < COLUMNS; i++) {
 		row.insertCell(i).innerHTML = '<button class="columnSelector" type="button" onclick="selectColumn(this.parentElement.cellIndex)"><div class="arrow-down"></div></button>';
 	}
 }
 
-function createRows(cols, rows) {
+function createRows() {
 	var table = document.getElementById("board").getElementsByTagName('tbody')[0];
-	for(var i=0; i < rows; i++) {
+	for(var i=0; i < ROWS; i++) {
 		var row = table.insertRow(i);
-		for(var j=0; j < cols; j++) {
+		for(var j=0; j < COLUMNS; j++) {
 			row.insertCell(j).innerHTML = '<div class="slot"></div>';
 		}
 	}
 }
 
-function playGame() {
-	playerTurn = "player1";
-	while(true) {
-		selectColumn(playerTurn);
-		if (victory()) {
-			displayerWinner();
-			break;
-		}
-
-	}
-}
-
 function selectColumn(col) {
-	if(dropSuccessful(col)) {
-		changePlayer();
+	var row = dropSuccessful(col);
+	if (row != -1) {
+		if (!checkForVictory(row, col)) {
+			changePlayer();
+		}
 	}
 }
 
 function changePlayer() {
-	if (playerTurn == "player1") {
-		playerTurn = "player2";
+	if (playerTurn == player1) {
+		playerTurn = player2;
 	} else {
-		playerTurn = "player1";
+		playerTurn = player1;
 	}
+	updatePlayerOnScreen();
+}
+
+function getPlayerTurn() {
+	return playerTurn == player1 ? "Player 1" : "Player 2";
+}
+
+function updatePlayerOnScreen() {
+	document.getElementById('Player').innerHTML = getPlayerTurn();
 }
 
 function getPlayerColour() {
-	if (playerTurn == "player1") {
-		return "red";
+	if (playerTurn == player1) {
+		return "#ff0000";
 	} else {
-		return "#FFEF00";
+		return "#ffef00";
 	}
 }
 
@@ -74,10 +76,10 @@ function dropSuccessful(col) {
 		if (hexValue == '#d3d3d3') {
 			console.log('setting colour');
 			slot.style.backgroundColor = getPlayerColour();
-			return true;
+			return i;
 		}
 	}
-	return false;
+	return -1;
 }
 
 function getHexColour( color ){
@@ -86,7 +88,7 @@ function getHexColour( color ){
 
     //leave only "R,G,B" :
     color = color
-                .replace("rgba", "") //must go BEFORE rgb replace
+                .replace("rgba", "")
                 .replace("rgb", "")
                 .replace("(", "")
                 .replace(")", "");
@@ -102,4 +104,147 @@ function getHexColour( color ){
             + ( '0' + parseInt(color[0], 10).toString(16) ).slice(-2)
             + ( '0' + parseInt(color[1], 10).toString(16) ).slice(-2)
             + ( '0' + parseInt(color[2], 10).toString(16) ).slice(-2);
+}
+
+function resetGame() {
+	var table = document.getElementById("board");
+	for(var i=0; i < ROWS+1; i++) {
+		var row = table.deleteRow();
+	}
+	createArrows();
+	createRows();
+	playerTurn = player1;
+	updatePlayerOnScreen();
+}
+
+function checkForVictory(row, col) {
+	if (horizontalWin(row, col) || diagonalWin() || verticalWin(row, col)) {
+		disableButtons();
+		displayWinner();
+		return true;
+	}
+	return false;
+}
+
+function horizontalWin(row, col) {
+	var table = document.getElementById('board');
+	var colour = getPlayerColour();
+	var count = 0;
+	for (var i=0; i < COLUMNS; i++) {
+		var slot = table.rows[row].cells[i].children[0];
+		var hexValue = getHexColour(window.getComputedStyle(slot, null).getPropertyValue('background-color'));
+		if (hexValue == colour) {
+			count++;
+			if (count >=4) {
+				return true;
+			}
+		} else {
+			count = 0;
+		}
+	}
+	return false;
+	
+}
+
+function displayWinner() {
+	var player = getPlayerTurn();
+	alert(player +" wins!");
+}
+
+function disableButtons() {
+	var buttons = document.getElementsByClassName('columnSelector');
+	for (var i=0; i < buttons.length; i++) {
+		buttons[i].disabled = true;
+	}
+}
+
+function diagonalWin() {
+	var count = 0;
+	
+	//Check down-right on upper triangle of board
+	for (var col=COLUMNS-1; col >= 0; col--) {
+		if (tallyDiagonalDownRight(1, col)) return true;
+	}
+	
+	//Check down-right on lower triangle of board
+	for (var row=ROWS; row >= 1; row--) {
+		if(tallyDiagonalDownRight(row, 0)) return true;
+	}
+	
+	//Check up-right on upper triangle of board
+	for (var col=COLUMNS-1; col >= 0; col--) {
+		if (tallyDiagonalUpRight(ROWS, col)) return true;
+	}
+	
+	//Check up-right on lower triangle of board
+	for (var row=1; row < ROWS; row++) {
+		if(tallyDiagonalUpRight(row, 0)) return true;
+	}
+	
+	return false;
+}
+
+function tallyDiagonalDownRight(startRow, startCol) {
+	var current_row = startRow;
+	var current_col = startCol;
+	var table = document.getElementById('board');
+	var colour = getPlayerColour();
+	var count = 0;
+	while (current_row <= ROWS && current_col < COLUMNS) {
+		var slot = table.rows[current_row].cells[current_col].children[0];
+		var hexValue = getHexColour(window.getComputedStyle(slot, null).getPropertyValue('background-color'));
+		if (hexValue == colour) {
+			count++;
+			if (count >=4) {
+				return true;
+			}
+		} else {
+			count = 0;
+		}
+		current_row++;
+		current_col++;
+	}
+	return false;
+}
+
+function tallyDiagonalUpRight(startRow, startCol) {
+	var current_row = startRow;
+	var current_col = startCol;
+	var table = document.getElementById('board');
+	var colour = getPlayerColour();
+	var count = 0;
+	while (current_row > 0 && current_col < COLUMNS) {
+		var slot = table.rows[current_row].cells[current_col].children[0];
+		var hexValue = getHexColour(window.getComputedStyle(slot, null).getPropertyValue('background-color'));
+		if (hexValue == colour) {
+			count++;
+			if (count >=4) {
+				return true;
+			}
+		} else {
+			count = 0;
+		}
+		current_row--;
+		current_col++;
+	}
+	return false;
+}
+
+function verticalWin(row, col) {
+	var table = document.getElementById('board');
+	var colour = getPlayerColour();
+	var count = 0;
+	for (var i=0; i < ROWS; i++) {
+		var slot = table.rows[i+1].cells[col].children[0];
+		var hexValue = getHexColour(window.getComputedStyle(slot, null).getPropertyValue('background-color'));
+		if (hexValue == colour) {
+			count++;
+			if (count >=4) {
+				return true;
+			}
+		} else {
+			count = 0;
+		}
+	}
+	return false;
 }
