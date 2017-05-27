@@ -257,7 +257,7 @@ function verticalWin(row, col) {
 
 //Computer makes a random move
 function computerMove() {
-	return Math.floor(Math.random() * (COLUMNS+1))
+	return Math.floor(Math.random() * COLUMNS)
 }
 
 function closeOverlay(id) {
